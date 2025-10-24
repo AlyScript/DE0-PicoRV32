@@ -8,7 +8,7 @@ module top (
 
     input  [31:0] mem_addr,
     input  [31:0] mem_wdata,
-    input  [31:0] mem_wstrb,
+    input  [ 3:0] mem_wstrb,
     output [31:0] mem_rdata,
 
     output oc_sel
@@ -31,12 +31,9 @@ module top (
   wire mem_ready;
   wire [31:0] mem_addr;
   wire [31:0] mem_wdata;
-  wire [31:0] mem_wstrb;
+  wire [3:0] mem_wstrb;
   wire [31:0] mem_rdata;
 
-  wire ocram_sel;
-  wire ocram_ready;
-  wire [31:0] ocram_data_o;
 
   wire leds_sel;
   wire leds_ready;
@@ -53,7 +50,6 @@ module top (
   // UART READ    0x1000_0008                 
   // UART WRITE   0x1000_000C
 
-  assign ocram_sel = mem_valid && (mem_addr < 32'h0000_8000);
   assign sram_sel  = mem_valid && (mem_addr < 32'h8000_2000);
   assign leds_sel  = mem_valid && (mem_addr == 32'h1000_0000);
   assign uart_sel  = mem_valid && ((mem_addr & 32'hFFFF_FFF8) == 32'h1000_0008);
@@ -82,11 +78,25 @@ module top (
       .mem_rdata(mem_rdata)
   );
 
+  wire ocram_sel;
+  wire rden_a;
+  wire [12:0] address_a;
+  wire ocram_ready;
+  wire [31:0] ocram_data_o;
+
+  assign ocram_sel = mem_valid && (mem_addr < 32'h0000_8000);
+  assign rden_a = ocram_sel && mem_instr;
+  assign address_a = mem_addr[13:0];
+
+  // "On Chip" Dual Port Block RAM.
+  // One line to fetch instructions, one for reading/writing data
   ocram_32k ocram (
-      // TODO: Map CPU bus signals onto A and B
+      // TODO: Finish instantiation
+      .address_a(address_a),
+      .rden_a(rden_a),
       .clock(clk),
-      .q_a  (ocram_data_o_instr),
-      .q_b  (ocram_data_o_data)
+      .q_a(ocram_data_o_instr),
+      .q_b(ocram_data_o_data)
   );
 
 
