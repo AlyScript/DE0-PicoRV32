@@ -106,6 +106,7 @@ module top (
 
   assign rden_b = ocram_sel && !mem_instr && !(|mem_wstrb);
   assign wren_b = ocram_sel && (|mem_wstrb);
+  assign byteena_b = rden_b ? 4'b1111 : mem_wstrb;
   assign address_b = mem_addr[12:0];
 
 
@@ -116,7 +117,7 @@ module top (
       .address_a(address_a),
       .address_b(address_b),
       .byteena_a(byteena_a),
-      .byteena_b(mem_wstrb),
+      .byteena_b(byteena_b),
       .clock(clk),
       .data_a(data_a),
       .data_b(mem_wdata),
