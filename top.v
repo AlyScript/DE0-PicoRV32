@@ -3,6 +3,9 @@ module top (
     input resetn,
 
     output wire [9:0] ledg
+
+    // input  wire uart_rx,
+    // output wire uart_tx
 );
 
   parameter [0:0] BARREL_SHIFTER = 0;
