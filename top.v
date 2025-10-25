@@ -44,7 +44,7 @@ module top (
   // UART READ    0x1000_0008
   // UART WRITE   0x1000_000C
 
-  assign sram_sel  = mem_valid && (mem_addr < 32'h8000_2000);
+  assign sram_sel  = mem_valid && (mem_addr >= 32'h0800_0000 && mem_addr < 32'h0880_0000);
   assign leds_sel  = mem_valid && (mem_addr == 32'h1000_0000);
   assign uart_sel  = mem_valid && ((mem_addr & 32'hFFFF_FFF8) == 32'h1000_0008);
 
