@@ -13,7 +13,9 @@ module top (
 
     input [31:0] ocram_data_o_instr,
     input [31:0] ocram_data_o_data,
-    output oc_sel
+    output oc_sel,
+
+    output wire [9:0] ledg
 );
 
   parameter [0:0] BARREL_SHIFTER = 0;
@@ -47,9 +49,9 @@ module top (
 
   // Memory Map
   // On-Chip Ram  0x0000_0000 - 0x0000_7FFF   (32K)
-  // SRAM         0x0800_0000 - 0x087F_FFFF   (8MB)
+  // SRAM         0x0800_0000 - 0x087F_FFFF   (8MB) (TODO: Implement this...)
   // LED          0x1000_0000
-  // UART READ    0x1000_0008                 
+  // UART READ    0x1000_0008
   // UART WRITE   0x1000_000C
 
   assign sram_sel  = mem_valid && (mem_addr < 32'h8000_2000);
@@ -131,7 +133,17 @@ module top (
 
   wire [31:0] ocram_rdata = mem_instr ? ocram_data_o_instr : ocram_data_o_data;
 
-  assign mem_rdata = 
+  output reg [9:0] ledg;
+  led_pio led_inst (
+      .clk(clk),
+      .resetn(resetn),
+      .led_sel(leds_sel),
+      .mem_wdata(mem_wdata),
+      .mem_wstrb(mem_wstrb),
+      .ledg(ledg)
+  );
+
+  assign mem_rdata =
       ocram_sel ? ocram_rdata :
       uart_sel ? uart_data_o :
       leds_sel ? leds_data_o :
