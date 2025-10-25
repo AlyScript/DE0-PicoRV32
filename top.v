@@ -41,14 +41,17 @@ module top (
   // On-Chip Ram  0x0000_0000 - 0x0000_7FFF   (32K)
   // SRAM         0x0800_0000 - 0x087F_FFFF   (8MB) (TODO: Implement this...)
   // LED          0x1000_0000
-  // UART READ    0x1000_0008
+  // UART READ    0x1000_0008       TODO: Implement Simple UART
   // UART WRITE   0x1000_000C
 
-  assign sram_sel  = mem_valid && (mem_addr >= 32'h0800_0000 && mem_addr < 32'h0880_0000);
-  assign leds_sel  = mem_valid && (mem_addr == 32'h1000_0000);
-  assign uart_sel  = mem_valid && ((mem_addr & 32'hFFFF_FFF8) == 32'h1000_0008);
+  assign sram_sel   = mem_valid && (mem_addr >= 32'h0800_0000 && mem_addr < 32'h0880_0000);
+  assign leds_sel   = mem_valid && (mem_addr == 32'h1000_0000);
+  assign uart_sel   = mem_valid && ((mem_addr & 32'hFFFF_FFF8) == 32'h1000_0008);
 
-  assign mem_ready = (mem_valid & (ocram_ready | sram_ready | leds_ready | uart_ready));
+  assign sram_ready = 0;
+  assign leds_ready = leds_sel;
+  assign uart_ready = 0;
+  assign mem_ready  = (mem_valid & (ocram_ready | sram_ready | leds_ready | uart_ready));
 
   picorv32 #(
       .STACKADDR(STACKADDR),
@@ -89,6 +92,7 @@ module top (
   wire ocram_ready;
 
   assign ocram_sel = mem_valid && (mem_addr < 32'h0000_8000);
+  assign ocram_ready = ocram_sel;
 
   assign rden_a = ocram_sel && mem_instr;
   assign address_a = mem_addr[12:0];
