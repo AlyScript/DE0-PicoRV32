@@ -2,19 +2,6 @@ module top (
     input clk,
     input resetn,
 
-    input  mem_valid,
-    input  mem_instr,
-    output mem_ready,
-
-    input  [31:0] mem_addr,
-    input  [31:0] mem_wdata,
-    input  [ 3:0] mem_wstrb,
-    output [31:0] mem_rdata,
-
-    input [31:0] ocram_data_o_instr,
-    input [31:0] ocram_data_o_data,
-    output oc_sel,
-
     output wire [9:0] ledg
 );
 
@@ -29,7 +16,6 @@ module top (
   parameter [31:0] PROGADDR_RESET = 32'h0000_0000;
   parameter [31:0] PROGADDR_IRQ = 32'h0000_0000;
 
-
   wire mem_valid;
   wire mem_instr;
   wire mem_ready;
@@ -38,6 +24,10 @@ module top (
   wire [3:0] mem_wstrb;
   wire [31:0] mem_rdata;
 
+  wire [31:0] ocram_data_o_instr;
+  wire [31:0] ocram_data_o_data;
+
+  wire sram_ready;
 
   wire leds_sel;
   wire leds_ready;
@@ -68,7 +58,6 @@ module top (
       .ENABLE_MUL(ENABLE_MUL),
       .ENABLE_DIV(ENABLE_DIV),
       .ENABLE_FAST_MUL(ENABLE_FAST_MUL),
-      .ENABLE_DIV(ENABLE_DIV),
       .ENABLE_IRQ_QREGS(ENABLE_IRQ_QREGS)
   ) cpu (
       .clk(clk),
@@ -98,8 +87,6 @@ module top (
 
   wire ocram_sel;
   wire ocram_ready;
-  wire [31:0] ocram_data_o_instr;
-  wire [31:0] ocram_data_o_data;
 
   assign ocram_sel = mem_valid && (mem_addr < 32'h0000_8000);
 
@@ -110,7 +97,6 @@ module top (
   assign wren_b = ocram_sel && (|mem_wstrb);
   assign byteena_b = rden_b ? 4'b1111 : mem_wstrb;
   assign address_b = mem_addr[12:0];
-
 
   // "On Chip" Dual Port Block RAM.
   // Port A: Instruction Fetch
@@ -133,7 +119,6 @@ module top (
 
   wire [31:0] ocram_rdata = mem_instr ? ocram_data_o_instr : ocram_data_o_data;
 
-  output reg [9:0] ledg;
   led_pio led_inst (
       .clk(clk),
       .resetn(resetn),
