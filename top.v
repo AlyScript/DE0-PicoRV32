@@ -11,6 +11,8 @@ module top (
     input  [ 3:0] mem_wstrb,
     output [31:0] mem_rdata,
 
+    input [31:0] ocram_data_o_instr,
+    input [31:0] ocram_data_o_data,
     output oc_sel
 );
 
@@ -78,26 +80,60 @@ module top (
       .mem_rdata(mem_rdata)
   );
 
-  wire ocram_sel;
-  wire rden_a;
+  /* Block Ram Signals */
   wire [12:0] address_a;
+  wire [12:0] address_b;
+  wire [3:0] byteena_a = 4'b1111;  // Instruction read always 32 bits
+  wire [3:0] byteena_b;
+  wire [31:0] data_a = 32'h0;  // "Tie Off" Port A writes
+  // wire [31:0] data_b;
+  wire rden_a;
+  wire rden_b;
+  wire wren_a = 1'b0;  // Instructions read only!
+  wire wren_b;
+  wire [31:0] q_a;
+  wire [31:0] q_b;
+
+  wire ocram_sel;
   wire ocram_ready;
-  wire [31:0] ocram_data_o;
+  wire [31:0] ocram_data_o_instr;
+  wire [31:0] ocram_data_o_data;
 
   assign ocram_sel = mem_valid && (mem_addr < 32'h0000_8000);
+
   assign rden_a = ocram_sel && mem_instr;
-  assign address_a = mem_addr[13:0];
+  assign address_a = mem_addr[12:0];
+
+  assign rden_b = ocram_sel && !mem_instr && !(|mem_wstrb);
+  assign wren_b = ocram_sel && (|mem_wstrb);
+  assign address_b = mem_addr[12:0];
+
 
   // "On Chip" Dual Port Block RAM.
-  // One line to fetch instructions, one for reading/writing data
+  // Port A: Instruction Fetch
+  // Port B: Read / Write Data
   ocram_32k ocram (
-      // TODO: Finish instantiation
       .address_a(address_a),
-      .rden_a(rden_a),
+      .address_b(address_b),
+      .byteena_a(byteena_a),
+      .byteena_b(mem_wstrb),
       .clock(clk),
+      .data_a(data_a),
+      .data_b(mem_wdata),
+      .rden_a(rden_a),
+      .rden_b(rden_b),
+      .wren_a(wren_a),
+      .wren_b(wren_b),
       .q_a(ocram_data_o_instr),
       .q_b(ocram_data_o_data)
   );
 
+  wire [31:0] ocram_rdata = mem_instr ? ocram_data_o_instr : ocram_data_o_data;
+
+  assign mem_rdata = 
+      ocram_sel ? ocram_rdata :
+      uart_sel ? uart_data_o :
+      leds_sel ? leds_data_o :
+      32'hFFFFFFFF;
 
 endmodule
