@@ -1,6 +1,6 @@
 module top (
     input clk,
-    input resetn,
+    input reset_button_n,
 
     output wire [9:0] ledg
 
@@ -106,6 +106,12 @@ module top (
   assign wren_b = ocram_sel && (|mem_wstrb);
   assign byteena_b = rden_b ? 4'b1111 : mem_wstrb;
   assign address_b = mem_addr[12:0];
+
+  reset_control reset_controller (
+      .clk(clk),
+      .reset_button_n(reset_button_n),
+      .reset_n(reset_n)
+  );
 
   // "On Chip" Dual Port Block RAM.
   // Port A: Instruction Fetch
