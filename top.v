@@ -20,7 +20,7 @@ module top (
   parameter [31:0] PROGADDR_IRQ = 32'h0000_0000;
   parameter LATCHED_MEM_RDATA = 0;
 
-  wire mem_valid;
+  // wire mem_valid;
   wire mem_instr;
   wire mem_ready;
   wire [31:0] mem_addr;
