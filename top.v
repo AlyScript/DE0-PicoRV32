@@ -18,6 +18,7 @@ module top (
   parameter [31:0] STACKADDR = (4 * MEM_WORDS);
   parameter [31:0] PROGADDR_RESET = 32'h0000_0000;
   parameter [31:0] PROGADDR_IRQ = 32'h0000_0000;
+  parameter LATCHED_MEM_RDATA = 0;
 
   wire mem_valid;
   wire mem_instr;
@@ -64,7 +65,8 @@ module top (
       .ENABLE_MUL(ENABLE_MUL),
       .ENABLE_DIV(ENABLE_DIV),
       .ENABLE_FAST_MUL(ENABLE_FAST_MUL),
-      .ENABLE_IRQ_QREGS(ENABLE_IRQ_QREGS)
+      .ENABLE_IRQ_QREGS(ENABLE_IRQ_QREGS),
+      .LATCHED_MEM_RDATA(LATCHED_MEM_RDATA)
   ) cpu (
       .clk(clk),
       .resetn(resetn),
